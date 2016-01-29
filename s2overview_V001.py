@@ -12,6 +12,8 @@ __author__ = 'simonaoliver'
 #                 process argument list.  Code has been split into two
 #                 functions as agument acceptance and process mosaic.
 #                 ( Sudhiir Jain )
+# Date          : Jan 20, 2016
+# Modifications : Processing of Mosaic have been for single or three bands ( Sudhir Jain )
 #
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
@@ -190,15 +192,22 @@ def process_mosaic():
                         os.remove(filelist)
     
                     print("Completed per band vrt creation")
-                    # Group bands to single file vrt for warping
-                    groupedvrt=os.path.join(outpath,k+zipfilename+"_grouped.vrt")
-                    print("gdalbuildvrt", "-separate", groupedvrt, os.path.join(outpath,"*.vrt"))
-                    subprocess.call(["gdalbuildvrt", "-separate", groupedvrt, os.path.join(outpath,mosaic_bands[0]+"_"+k+zipfilename+".vrt"),os.path.join(outpath,mosaic_bands[1]+"_"+k+zipfilename+".vrt"),os.path.join(outpath,mosaic_bands[2]+"_"+k+zipfilename+".vrt")])
-    
-                    # Subsample imagery in source projection for faster warping...test if this is the case
-                    #groupedscaledimg= os.path.join(outpath,zipfilename+"_"+k+"_grouped_scaled."+extension)
-                    #print("gdalwarp", "-tr",outres,outres,"-of",outformat,groupedvrt, groupedscaledimg)
-                    #subprocess.call(["gdalwarp", "-tr",outres,outres,"-of",outformat,groupedvrt, groupedscaledimg])
+
+		  # Group bands to single file vrt for warping
+	            groupedvrt=os.path.join(outpath,k+zipfilename+"_grouped.vrt")
+                    
+                    print "Length of Bands = ",len(mosaic_bands)		    
+		    
+		    if len(mosaic_bands) > 1 :
+			 print("gdalbuildvrt", "-separate", groupedvrt, os.path.join(outpath,"*.vrt"))
+			 subprocess.call(["gdalbuildvrt", "-separate", groupedvrt, os.path.join(outpath,mosaic_bands[0]+"_"+k+zipfilename+".vrt"),os.path.join(outpath,mosaic_bands[1]+"_"+k+zipfilename+".vrt"),os.path.join(outpath,mosaic_bands[2]+"_"+k+zipfilename+".vrt")])
+		    else:
+			 subprocess.call(["gdalbuildvrt", "-separate", groupedvrt, os.path.join(outpath,mosaic_bands[0]+"_"+k+zipfilename+".vrt")])
+
+		    # Subsample imagery in source projection for faster warping...test if this is the case
+		    #groupedscaledimg= os.path.join(outpath,zipfilename+"_"+k+"_grouped_scaled."+extension)
+		    #print("gdalwarp", "-tr",outres,outres,"-of",outformat,groupedvrt, groupedscaledimg)
+		    #subprocess.call(["gdalwarp", "-tr",outres,outres,"-of",outformat,groupedvrt, groupedscaledimg])
     
                     # Warp to output projection
                     #outband = os.path.join(outpath,zipfilename+"_"+k+"."+extension)
@@ -233,5 +242,6 @@ if __name__ == "__main__":
     input_path, outpath , outformat, \
     extension, outepsg, outres, band = get_args()
     mosaic_bands = band.split(':')
+    print 'Length of mosaic_band',len(mosaic_bands)
     process_mosaic()
 
